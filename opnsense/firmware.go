@@ -2,7 +2,6 @@ package opnsense
 
 import (
 	"fmt"
-	"log"
 )
 
 func (c *Client) PowerOff() (*StatusMessage, error) {
@@ -231,7 +230,7 @@ func (c *Client) FirmwareInstall(packageName string) error {
 	}
 
 	if status.Status != StatusOK {
-		log.Printf("[TRACE] FirmwareInstall response: %#v", status)
+		logger.Printf("[TRACE] FirmwareInstall response: %#v", status)
 
 		return fmt.Errorf("FirmwareInstall failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -250,7 +249,7 @@ func (c *Client) FirmwareReInstall(packageName string) error {
 	}
 
 	if status.Status != StatusOK {
-		log.Printf("[TRACE] FirmwareReInstall response: %#v", status)
+		logger.Printf("[TRACE] FirmwareReInstall response: %#v", status)
 
 		return fmt.Errorf("FirmwareReInstall failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -269,7 +268,7 @@ func (c *Client) FirmwareRemove(packageName string) error {
 	}
 
 	if status.Status != StatusOK {
-		log.Printf("[TRACE] FirmwareRemove response: %#v", status)
+		logger.Printf("[TRACE] FirmwareRemove response: %#v", status)
 
 		return fmt.Errorf("FirmwareRemove failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -288,7 +287,7 @@ func (c *Client) FirmwareLock(packageName string) error {
 	}
 
 	if status.Status != StatusOK {
-		log.Printf("[TRACE] FirmwareLock response: %#v", status)
+		logger.Printf("[TRACE] FirmwareLock response: %#v", status)
 
 		return fmt.Errorf("FirmwareLock failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -307,7 +306,7 @@ func (c *Client) FirmwareUnlock(packageName string) error {
 	}
 
 	if status.Status != StatusOK {
-		log.Printf("[TRACE] FirmwareUnlock response: %#v", status)
+		logger.Printf("[TRACE] FirmwareUnlock response: %#v", status)
 
 		return fmt.Errorf("FirmwareUnlock failed: %w", ErrOpnsenseStatusNotOk)
 	}

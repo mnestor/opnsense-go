@@ -2,7 +2,6 @@ package opnsense
 
 import (
 	"fmt"
-	"log"
 	"path"
 
 	uuid "github.com/satori/go.uuid"
@@ -149,7 +148,7 @@ func (c *Client) BgpNeighborSet(uuid uuid.UUID, clientConf BgpNeighborSet) (*Gen
 	}
 
 	if response.Result != StatusSaved {
-		log.Printf("[TRACE] BgpNeighborSet response: %#v", response)
+		logger.Printf("[TRACE] BgpNeighborSet response: %#v", response)
 
 		return nil, fmt.Errorf("BgpNeighborSet failed: %w", ErrOpnsenseSave)
 	}
@@ -172,7 +171,7 @@ func (c *Client) BgpNeighborAdd(clientConf BgpNeighborSet) (*uuid.UUID, error) {
 	}
 
 	if response.Result != StatusDeleted {
-		log.Printf("[TRACE] BgpNeighborAdd response: %#v", response)
+		logger.Printf("[TRACE] BgpNeighborAdd response: %#v", response)
 
 		return nil, fmt.Errorf("BgpNeighborAdd failed: %w", ErrOpnsenseSave)
 	}
@@ -191,7 +190,7 @@ func (c *Client) BgpNeighborDelete(uuid uuid.UUID) (*GenericResponse, error) {
 	}
 
 	if response.Result != StatusDeleted {
-		log.Printf("[TRACE] BgpNeighborDelete response: %#v", response)
+		logger.Printf("[TRACE] BgpNeighborDelete response: %#v", response)
 
 		return nil, fmt.Errorf("BgpNeighborDelete failed: %w", ErrOpnsenseDelete)
 	}

@@ -2,7 +2,6 @@ package opnsense
 
 import (
 	"fmt"
-	"log"
 	"path"
 
 	uuid "github.com/satori/go.uuid"
@@ -35,7 +34,7 @@ func (c *Client) FirewallFilterApply(rollbackRevision *string) error {
 	}
 
 	if response.Status != "OK\n\n" {
-		log.Printf("[TRACE] FirewallFilterApply response: %#v", response)
+		logger.Printf("[TRACE] FirewallFilterApply response: %#v", response)
 
 		return fmt.Errorf("FirewallFilterApply failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -142,7 +141,7 @@ func (c *Client) FirewallFilterRuleSet(rule *FilterRule) error {
 	}
 
 	if response.Result != StatusSaved {
-		log.Printf("[TRACE] FirewallFilterRuleSet response: %#v", response)
+		logger.Printf("[TRACE] FirewallFilterRuleSet response: %#v", response)
 
 		return fmt.Errorf("FirewallFilterRuleSet failed: %w", ErrOpnsenseSave)
 	}
@@ -165,7 +164,7 @@ func (c *Client) FirewallFilterRuleAdd(rule *FilterRule) error {
 	}
 
 	if response.Result != StatusSaved {
-		log.Printf("[TRACE] FirewallFilterRuleAdd response: %#v", response)
+		logger.Printf("[TRACE] FirewallFilterRuleAdd response: %#v", response)
 
 		return fmt.Errorf("FirewallFilterRuleAdd failed: %w", ErrOpnsenseSave)
 	}
@@ -184,7 +183,7 @@ func (c *Client) FirewallFilterRuleDelete(uuid uuid.UUID) error {
 	}
 
 	if response.Result != StatusDeleted {
-		log.Printf("[TRACE] FirewallFilterRuleDelete response: %#v", response)
+		logger.Printf("[TRACE] FirewallFilterRuleDelete response: %#v", response)
 
 		return fmt.Errorf("FirewallFilterRuleDelete failed: %w", ErrOpnsenseDelete)
 	}

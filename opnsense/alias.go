@@ -2,7 +2,6 @@ package opnsense
 
 import (
 	"fmt"
-	"log"
 	"path"
 	"strings"
 
@@ -10,24 +9,27 @@ import (
 )
 
 type AliasBase struct {
-	Enabled     string `json:"enabled"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Updatefreq  string `json:"updatefreq"`
-	Counters    string `json:"counters"`
+	Enabled     string   `json:"enabled"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Updatefreq  string   `json:"updatefreq"`
+	Counters    string   `json:"counters"`
+	Categories  []string `json:"categories_uuid"`
 }
 
 type AliasSet struct {
 	AliasBase
-	Type    string `json:"type"`
-	Proto   string `json:"proto"`
-	Content string `json:"content"`
+	Type       string `json:"type"`
+	Proto      string `json:"proto"`
+	Content    string `json:"content"`
+	Categories string `json:"categories"`
 }
 
 type AliasGet struct {
-	Type    map[string]AliasNestedValue `json:"type"`
-	Proto   map[string]AliasNestedValue `json:"proto"`
-	Content map[string]AliasNestedValue `json:"content"`
+	Type       map[string]AliasNestedValue `json:"type"`
+	Proto      map[string]AliasNestedValue `json:"proto"`
+	Content    map[string]AliasNestedValue `json:"content"`
+	Categories map[string]AliasNestedValue `json:"categories"`
 	AliasBase
 }
 
@@ -50,6 +52,8 @@ type AliasListItem struct {
 	Description string `json:"description"`
 	Type        string `json:"type"`
 	Content     string `json:"content"`
+	Contents    []string
+	Categories  []string `json:"categories_uuid"`
 }
 
 type AliasFormat struct {
@@ -62,6 +66,7 @@ type AliasFormat struct {
 	Type        string
 	Proto       string
 	Content     []string
+	Categories  []string
 }
 
 type AliasReconfigureResponse struct {
@@ -102,6 +107,12 @@ func (c *Client) AliasGet(uuid uuid.UUID) (*AliasFormat, error) {
 		}
 	}
 
+	for k, v := range rawResponse.Alias.Categories {
+		if v.Selected == 1 && k != "" {
+			response.Categories = append(response.Categories, k)
+		}
+	}
+
 	return &response, err
 }
 
@@ -111,6 +122,14 @@ func (c *Client) AliasGetList() (*AliasList, error) {
 	err := c.GetAndUnmarshal("firewall/alias/searchItem", &response)
 	if err != nil {
 		return nil, err
+	}
+
+	for i, v := range response.Rows {
+		if strings.Contains(v.Content, "\n") {
+			response.Rows[i].Contents = strings.Split(v.Content, "\n")
+		} else {
+			response.Rows[i].Contents = []string{v.Content}
+		}
 	}
 
 	return &response, err
@@ -132,7 +151,7 @@ func (c *Client) AliasUpdate(uuid uuid.UUID, conf AliasFormat) (*GenericResponse
 	}
 
 	if response.Result != StatusSaved {
-		log.Printf("[TRACE] AliasUpdate response: %#v", response)
+		logger.Printf("[TRACE] AliasUpdate response: %#v", response)
 
 		return nil, fmt.Errorf("AliasUpdate failed: %w", ErrOpnsenseSave)
 	}
@@ -157,7 +176,7 @@ func (c *Client) AliasAdd(conf AliasFormat) (*uuid.UUID, error) {
 	}
 
 	if response.Result != StatusSaved {
-		log.Printf("[TRACE] AliasAdd response: %#v", response)
+		logger.Printf("[TRACE] AliasAdd response: %#v", response)
 
 		return nil, fmt.Errorf("AliasAdd failed: %w", ErrOpnsenseSave)
 	}
@@ -181,6 +200,7 @@ func AliasFormatToSet(conf AliasFormat) AliasSet {
 	set.Type = conf.Type
 	set.Proto = conf.Proto
 	set.Content = strings.Join(conf.Content, "\n")
+	set.Categories = strings.Join(conf.Categories, "\n")
 
 	return set
 }
@@ -194,7 +214,7 @@ func (c *Client) AliasDelete(uuid uuid.UUID) (*GenericResponse, error) {
 	}
 
 	if response.Result != StatusDeleted {
-		log.Printf("[TRACE] AliasDelete response: %#v", response)
+		logger.Printf("[TRACE] AliasDelete response: %#v", response)
 
 		return nil, fmt.Errorf("AliasDelete failed: %w", ErrOpnsenseDelete)
 	}
@@ -213,7 +233,7 @@ func (c *Client) AliasReconfigure() (*AliasReconfigureResponse, error) {
 	}
 
 	if response.Status != StatusOK {
-		log.Printf("[TRACE] AliasReconfigure response: %#v", response)
+		logger.Printf("[TRACE] AliasReconfigure response: %#v", response)
 
 		return nil, fmt.Errorf("AliasReconfigure failed: %w", ErrOpnsenseStatusNotOk)
 	}
@@ -264,7 +284,7 @@ func (c *Client) AliasUtilsAdd(name string, request AliasUtilsSet) (*AliasUtilsR
 	}
 
 	if response.Status != StatusDone {
-		log.Printf("[TRACE] AliasUtilsGet response: %#v", response)
+		logger.Printf("[TRACE] AliasUtilsGet response: %#v", response)
 
 		return nil, fmt.Errorf("AliasUtilsGet failed: %w", ErrOpnsenseDone)
 	}
@@ -281,7 +301,7 @@ func (c *Client) AliasUtilsDel(name string, request AliasUtilsSet) (*AliasUtilsR
 	}
 
 	if response.Status != StatusDone {
-		log.Printf("[TRACE] AliasUtilsDel response: %#v", response)
+		logger.Printf("[TRACE] AliasUtilsDel response: %#v", response)
 
 		return nil, fmt.Errorf("AliasUtilsDel failed: %w", ErrOpnsenseDone)
 	}

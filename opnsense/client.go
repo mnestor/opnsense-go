@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -25,7 +24,7 @@ type Client struct {
 }
 
 func NewClient(baseURL, key, secret string, insecureSkipVerify bool) (*Client, error) {
-	log.Printf(
+	logger.Printf(
 		"[TRACE] Creating new OPNsense client with url: %s, key: %s, secret: %s, insecure: %t",
 		baseURL,
 		key,
@@ -50,7 +49,7 @@ func NewClient(baseURL, key, secret string, insecureSkipVerify bool) (*Client, e
 		return nil, err
 	}
 
-	log.Printf("[TRACE] Parsed URL: %s", url.String())
+	logger.Printf("[TRACE] Parsed URL: %s", url.String())
 
 	client := &Client{
 		baseURL: url,
@@ -59,7 +58,7 @@ func NewClient(baseURL, key, secret string, insecureSkipVerify bool) (*Client, e
 		c:       httpClient,
 	}
 
-	log.Printf("[TRACE] Finished setting up client: %#v", client)
+	logger.Printf("[TRACE] Finished setting up client: %#v", client)
 
 	return client, nil
 }
@@ -67,11 +66,11 @@ func NewClient(baseURL, key, secret string, insecureSkipVerify bool) (*Client, e
 func (c *Client) Get(api string) (resp *http.Response, err error) {
 	// url := path.Join(c.baseURL.String(), api)
 	url := c.baseURL.String() + "/api/" + api
-	log.Printf("[TRACE] GET to %s", url)
+	logger.Printf("[TRACE] GET to %s", url)
 
 	request, err := http.NewRequestWithContext(context.TODO(), "GET", url, nil)
 	if err != nil {
-		log.Printf("[ERROR] Failed to create GET request: %#v\n\n", err)
+		logger.Printf("[ERROR] Failed to create GET request: %#v\n\n", err)
 
 		return nil, err
 	}
@@ -85,7 +84,7 @@ func (c *Client) Get(api string) (resp *http.Response, err error) {
 func (c *Client) GetAndUnmarshal(api string, responseData interface{}) error {
 	resp, err := c.Get(api)
 	if err != nil {
-		log.Printf("[ERROR] Failed to GET request: %s\n", err)
+		logger.Printf("[ERROR] Failed to GET request: %s\n", err)
 
 		return err
 	}
@@ -94,20 +93,20 @@ func (c *Client) GetAndUnmarshal(api string, responseData interface{}) error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("[ERROR] Failed to read GET response: %#v\n", err)
+		logger.Printf("[ERROR] Failed to read GET response: %#v\n", err)
 
 		return err
 	}
 
 	// add possible internal error from the OPNSense API
 	if resp.StatusCode == 500 {
-		log.Printf("[ERROR] Internal Error status code received: %#v\n", string(body))
+		logger.Printf("[ERROR] Internal Error status code received: %#v\n", string(body))
 
 		return fmt.Errorf("GetAndUnmarshal failed: %w", ErrOpnsense500)
 	}
 
 	if resp.StatusCode == 401 {
-		log.Printf("[ERROR] Failed to authenticate: %#v\n", string(body))
+		logger.Printf("[ERROR] Failed to authenticate: %#v\n", string(body))
 
 		return fmt.Errorf("GetAndUnmarshal failed: %w", ErrOpnsense401)
 	}
@@ -122,11 +121,11 @@ func (c *Client) GetAndUnmarshal(api string, responseData interface{}) error {
 
 	err = json.Unmarshal(body, responseData)
 
-	log.Printf("[TRACE] Response for URL: %s\n", api)
-	log.Printf("[TRACE] Response body: %s\n", string(body))
+	logger.Printf("[TRACE] Response for URL: %s\n", api)
+	logger.Printf("[TRACE] Response body: %s\n", string(body))
 
 	if err != nil {
-		log.Printf("[ERROR] Failed to unmarshal GET response: %#v\n", err)
+		logger.Printf("[ERROR] Failed to unmarshal GET response: %#v\n", err)
 
 		return err
 	}
@@ -137,11 +136,11 @@ func (c *Client) GetAndUnmarshal(api string, responseData interface{}) error {
 func (c *Client) Post(api string, body io.Reader) (resp *http.Response, err error) {
 	// url := path.Join(c.baseURL.String(), api)
 	url := c.baseURL.String() + "/api/" + api
-	log.Printf("[TRACE] POST to %s", url)
+	logger.Printf("[TRACE] POST to %s", url)
 
 	request, err := http.NewRequestWithContext(context.TODO(), "POST", url, body)
 	if err != nil {
-		log.Printf("[ERROR] Failed to create POST request: %#v\n", err)
+		logger.Printf("[ERROR] Failed to create POST request: %#v\n", err)
 
 		return nil, err
 	}
@@ -155,16 +154,16 @@ func (c *Client) Post(api string, body io.Reader) (resp *http.Response, err erro
 func (c *Client) PostAndMarshal(api string, requestData interface{}, responseData interface{}) error {
 	requestBody, err := json.Marshal(requestData)
 	if err != nil {
-		log.Printf("[ERROR] Failed to marshal requestData for POST request: %#v\n", err)
+		logger.Printf("[ERROR] Failed to marshal requestData for POST request: %#v\n", err)
 
 		return err
 	}
 
-	log.Printf("[TRACE] Request payload: %s", string(requestBody))
+	logger.Printf("[TRACE] Request payload: %s", string(requestBody))
 
 	resp, err := c.Post(api, bytes.NewBuffer(requestBody))
 	if err != nil {
-		log.Printf("[ERROR] Failed to POST request: %#v\n", err)
+		logger.Printf("[ERROR] Failed to POST request: %#v\n", err)
 
 		return err
 	}
@@ -173,23 +172,23 @@ func (c *Client) PostAndMarshal(api string, requestData interface{}, responseDat
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("[ERROR] Failed to read POST response: %#v\n", err)
+		logger.Printf("[ERROR] Failed to read POST response: %#v\n", err)
 
 		return err
 	}
 
-	log.Println("[TEMP]: ", string(body))
+	logger.Println("[TEMP]: ", string(body))
 
 	if resp.StatusCode == 401 {
-		log.Printf("[ERROR] Failed to authenticate: %#v\n", string(body))
+		logger.Printf("[ERROR] Failed to authenticate: %#v\n", string(body))
 
 		return fmt.Errorf("PostAndMarshal failed: %w", ErrOpnsense401)
 	}
 
 	err = json.Unmarshal(body, responseData)
 	if err != nil {
-		log.Printf("[ERROR] Failed to unmarshal POST response: %#v\n", err)
-		log.Printf("[ERROR] Failed to unmarshal POST response: %s\n", string(body))
+		logger.Printf("[ERROR] Failed to unmarshal POST response: %#v\n", err)
+		logger.Printf("[ERROR] Failed to unmarshal POST response: %s\n", string(body))
 
 		return err
 	}

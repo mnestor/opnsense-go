@@ -2,12 +2,10 @@
 
 ---
 
-This project is currently unmaintained, I do not have any time for it at the moment.
-There is a lot of potential, but it would require a code generator to make code based
-on the API docs.
-
-If you would be interested in sponsoring the continuation of this project, please
-reach out to me.
+2024-08-01 - Forked from: github.com/kradalby/opnsense-go
+2024-08-01 - Added .Contents to AliasListItem that is the .Content parsed into a slice 
+             Added .Categories to AliasListItem
+             Provided way to override logging
 
 ---
 
