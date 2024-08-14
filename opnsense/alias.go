@@ -109,7 +109,7 @@ func (c *Client) AliasGet(uuid uuid.UUID) (*AliasFormat, error) {
 
 	for k, v := range rawResponse.Alias.Categories {
 		if v.Selected == 1 && k != "" {
-			response.Categories = append(response.Categories, k)
+			response.Categories = append(response.Categories, v.Value)
 		}
 	}
 
