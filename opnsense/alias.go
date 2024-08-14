@@ -66,7 +66,7 @@ type AliasFormat struct {
 	Type        string
 	Proto       string
 	Content     []string
-	Categories  []string
+	Categories  map[string]string
 }
 
 type AliasReconfigureResponse struct {
@@ -107,9 +107,10 @@ func (c *Client) AliasGet(uuid uuid.UUID) (*AliasFormat, error) {
 		}
 	}
 
+	response.Categories = map[string]string{}
 	for k, v := range rawResponse.Alias.Categories {
 		if v.Selected == 1 && k != "" {
-			response.Categories = append(response.Categories, v.Value)
+			response.Categories[k] = v.Value
 		}
 	}
 
