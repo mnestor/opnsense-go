@@ -15,3 +15,5 @@ require (
 	github.com/rogpeppe/go-internal v1.5.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
+
+replace github.com/kradalby/opensense-go => github.com/mnestor/opensense-go latest
