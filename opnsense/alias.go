@@ -201,7 +201,12 @@ func AliasFormatToSet(conf AliasFormat) AliasSet {
 	set.Type = conf.Type
 	set.Proto = conf.Proto
 	set.Content = strings.Join(conf.Content, "\n")
-	set.Categories = strings.Join(conf.Categories, "\n")
+	
+	categories := []string{}
+	for _, v := range rawResponse.Alias.Categories {
+		categories = append(categories, v)
+	}
+	set.Categories = strings.Join(categories, ",")
 
 	return set
 }
